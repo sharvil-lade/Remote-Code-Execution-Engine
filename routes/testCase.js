@@ -2,8 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 
-const app = express();
-app.use(bodyParser.json());
+const router = express.Router();
+router.use(bodyParser.json());
 
 const Schema = mongoose.Schema;
 
@@ -24,43 +24,65 @@ const QuestionTestCase = mongoose.model(
   questionTestCaseSchema
 );
 
-app.post("/:quesID", async (req, res) => {
+router.post("/:quesID", async (req, res) => {
   const testcase = new TestCase({
     input: req.body.inputSRC.toString(),
     output: req.body.outputSRC.toString(),
   });
 
   try {
-    const data = await QuestionTestCase.findOne({
-      questionID: req.params.quesID,
+    let questionTest = await QuestionTestCase.findOne({
+      questionID: req.params.quesID.toString(),
     });
 
-    if (!data) {
+    if (!questionTest) {
       const newTestCase = new QuestionTestCase({
         questionID: req.params.quesID,
         testCases: [testcase],
       });
       await newTestCase.save();
     } else {
-      await QuestionTestCase.updateOne(
-        { questionID: req.params.quesID },
-        { $push: { testCases: testcase } }
-      );
+      questionTest.testCases.push(testcase);
+      await questionTest.save();
     }
     res.send("Updated");
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send("Internal Server Error");
   }
 });
 
-const server = app.listen(process.env.PORT || 3000, async () => {
+router.get("/:quesID/:testCaseNumber", async (req, res) => {
+  const testCaseNumber = parseInt(req.params.testCaseNumber);
+
+  if (testCaseNumber <= 0) {
+    return res
+      .status(400)
+      .send("Invalid Request: Invalid TestCase Number requested");
+  }
+
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/OnlineJudgeDataBase", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    const questionTest = await QuestionTestCase.findOne({
+      questionID: req.params.quesID,
     });
-    console.log(`Server is listening on port ${server.address().port}`);
+
+    if (!questionTest) {
+      return res.status(404).send("Invalid Request: Question Code Not Found");
+    }
+
+    if (testCaseNumber > questionTest.testCases.length) {
+      return res
+        .status(400)
+        .send("Invalid Request: TestCase Number out of bounds");
+    }
+
+    const requiredTestCase = questionTest.testCases[testCaseNumber - 1];
+    res.json({
+      inputSRC: requiredTestCase.input,
+      outputSRC: requiredTestCase.output,
+    });
   } catch (error) {
-    console.error("Database connection error:", error);
+    res.status(500).send("Internal Server Error");
   }
 });
+
+module.exports = router;
