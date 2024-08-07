@@ -1,6 +1,8 @@
 const express = require("express");
+const { json } = require("express/lib/response");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const fs = require("fs");
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -12,76 +14,68 @@ const testCaseSchema = new Schema({
   output: String,
 });
 
-const TestCase = mongoose.model("TestCase", testCaseSchema);
+const testCase = mongoose.model("testCase", testCaseSchema);
 
 const questionTestCaseSchema = new Schema({
   questionID: String,
   testCases: [testCaseSchema],
 });
 
-const QuestionTestCase = mongoose.model(
-  "QuestionTestCase",
+const questionTestCase = mongoose.model(
+  "questionTestCases",
   questionTestCaseSchema
 );
 
 router.post("/:quesID", async (req, res) => {
-  const testcase = new TestCase({
+  const testcase = new testCase({
     input: req.body.inputSRC.toString(),
     output: req.body.outputSRC.toString(),
   });
-
-  try {
-    let questionTest = await QuestionTestCase.findOne({
-      questionID: req.params.quesID.toString(),
+  questionTestCase
+    .find({ questionID: req.params.quesID.toString() })
+    .then(async (data) => {
+      if (data.toString() == "") {
+        const newTestCase = new questionTestCase({
+          questionID: req.params.quesID,
+          testCases: [testcase],
+        });
+        await newTestCase.save();
+      } else {
+        await questionTestCase.updateOne(
+          { questionID: req.params.quesID },
+          { $push: { testCases: testcase } }
+        );
+      }
+      res.end("Updated");
     });
-
-    if (!questionTest) {
-      const newTestCase = new QuestionTestCase({
-        questionID: req.params.quesID,
-        testCases: [testcase],
-      });
-      await newTestCase.save();
-    } else {
-      questionTest.testCases.push(testcase);
-      await questionTest.save();
-    }
-    res.send("Updated");
-  } catch (error) {
-    res.status(500).send("Internal Server Error");
-  }
 });
 
-router.get("/:quesID/:testCaseNumber", async (req, res) => {
-  const testCaseNumber = parseInt(req.params.testCaseNumber);
-
-  if (testCaseNumber <= 0) {
-    return res
-      .status(400)
-      .send("Invalid Request: Invalid TestCase Number requested");
-  }
-
-  try {
-    const questionTest = await QuestionTestCase.findOne({
-      questionID: req.params.quesID,
-    });
-
-    if (!questionTest) {
-      return res.status(404).send("Invalid Request: Question Code Not Found");
-    }
-
-    if (testCaseNumber > questionTest.testCases.length) {
-      return res
-        .status(400)
-        .send("Invalid Request: TestCase Number out of bounds");
-    }
-
-    const requiredTestCase = questionTest.testCases[testCaseNumber - 1];
-    res.json({
-      inputSRC: requiredTestCase.input,
-      outputSRC: requiredTestCase.output,
-    });
-  } catch (error) {
-    res.status(500).send("Internal Server Error");
+router.get("/:quesID/:testCaseNumber", (req, res) => {
+  if (req.params.testCaseNumber <= 0) {
+    res.status(400).send("Invalid Request: Invalid TestCase Number requested");
+  } else {
+    questionTestCase
+      .findOne({ questionID: req.params.quesID })
+      .then(async (data) => {
+        if (data == null) {
+          res.status(404).send("Invalid Request: Question Code Not Found");
+        } else {
+          var requiredTestCases = data.testCases;
+          try {
+            var requiredTestCase =
+              requiredTestCases[req.params.testCaseNumber - 1];
+            res.send(
+              '{ "inputSRC": "' +
+                requiredTestCase.input +
+                '", "outputSRC": "' +
+                requiredTestCase.output +
+                '" \n}'
+            );
+          } catch (e) {
+            res.status(400).send("Invalid Request");
+          }
+        }
+      });
   }
 });
 

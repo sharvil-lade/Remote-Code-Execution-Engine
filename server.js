@@ -1,12 +1,14 @@
 const express = require("express");
 const app = express();
+const mongoose = require("mongoose");
 
-const server = app.listen(3000, function () {
-  const host = server.address().address || "localhost";
-  const port = server.address().port;
-  console.log(`Listening at http://${host}:${port}`);
-});
+const testCases = require("./routes/testCase.js");
 
-app.get("/", (req, res) => {
-  res.send("Server is up and running!");
+app.use("/testCase", testCases);
+
+const server = app.listen(process.env.PORT || 3000, async function () {
+  await mongoose.connect("mongodb://127.0.0.1:27017/OnlineJudgeDataBase");
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log("Listening http://%s:%s", host, port);
 });
