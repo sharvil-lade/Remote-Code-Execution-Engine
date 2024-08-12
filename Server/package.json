@@ -1,0 +1,23 @@
+{
+  "name": "remote-code-execution-engine",
+  "version": "1.0.0",
+  "description": "remote-code-execution-engine",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "Sharvil Lade",
+  "license": "ISC",
+  "dependencies": {
+    "amqp-connection-manager": "^4.1.14",
+    "amqplib": "^0.10.4",
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.2",
+    "nodemon": "^3.1.4",
+    "redis": "^4.7.0",
+    "validator": "^13.12.0"
+  }
+}
