@@ -1,0 +1,13 @@
+{
+  "name": "remote-code-execution-engine",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "Sharvil Lade",
+  "license": "ISC",
+  "description": ""
+}
