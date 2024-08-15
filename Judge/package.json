@@ -9,5 +9,12 @@
   "keywords": [],
   "author": "Sharvil Lade",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "amqp": "^0.2.7",
+    "amqplib": "^0.10.4",
+    "express": "^4.19.2",
+    "fs": "^0.0.1-security",
+    "redis": "^4.7.0"
+  }
 }
