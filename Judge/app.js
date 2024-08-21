@@ -219,8 +219,4 @@ runSubmission = async (
   return 0;
 };
 
-runSubmission("Q21", "test", "C++", "confident_lewin", 1000);
-
-// checkOutput('test', 3);
-
 module.exports = { runSubmission };
