@@ -24,13 +24,14 @@ amqp.connect("amqp://localhost", async (error1, connection) => {
         const message = JSON.parse(msg.content.toString());
         console.log(message);
         const fileID = message.submissionID;
+        console.log(message.language == "C");
         var extension = "cpp";
         if (message.language == "python3") {
           extension = "py";
         } else if (message.language == "java") {
           extension = "java";
         } else if (message.language == "C") {
-          extension == "c";
+          extension = "c";
         } else if (message.language != "C++") {
           extension = "Invalid";
           setInRedis(fileID, "400:Invalid Language");
@@ -38,6 +39,7 @@ amqp.connect("amqp://localhost", async (error1, connection) => {
           channel.ack(msg);
         }
         if (extension != "Invalid") {
+          console.log(extension);
           setInRedis(fileID, "Processing");
           console.log(
             "file name: " + "../folderrun/" + fileID + "." + extension
