@@ -190,7 +190,7 @@ runSubmission = async (
     }
   });
   await delay(2000);
-  await exec("sudo docker stop " + containerName, (err, stdout, stderr) => {
+  await execSync("sudo docker stop " + containerName, (err, stdout, stderr) => {
     console.log("Docker stopped");
   });
   await exec("sudo docker rm " + containerName, (err, stdout, stderr) => {
