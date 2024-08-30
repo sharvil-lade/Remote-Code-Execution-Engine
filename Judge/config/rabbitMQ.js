@@ -55,11 +55,11 @@ amqp.connect("amqp://localhost", async (error1, connection) => {
           var cmd = "";
           if (count == 0) {
             cmd =
-              'echo 51101 | sudo -S docker run -v /home/sharvil/PersonalSet/OJBh/Judge/folderrun/:/home/folderrun/ -dt --memory="512m" --cpus="1" ubuntu-comp';
+              'echo 51101 | sudo -S docker run -v /home/sharvil/Projects/Remote-Code-Execution-Engine/Judge/folderrun/:/home/folderrun/ -dt --memory="512m" --cpus="1" ubuntu-comp';
             ++count;
           } else {
             cmd =
-              'sudo docker run -v /home/sharvil/PersonalSet/OJBh/Judge/folderrun/:/home/folderrun/ -dt --memory="512m" --cpus="1" ubuntu-comp';
+              'sudo docker run -v /home/sharvil/Projects/Remote-Code-Execution-Engine/Judge/folderrun/:/home/folderrun/ -dt --memory="512m" --cpus="1" ubuntu-comp';
           }
           exec(cmd, (err, stdout, stderr) => {
             if (err) {
