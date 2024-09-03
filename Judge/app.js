@@ -35,11 +35,13 @@ checkOutput = (submissionID, length) => {
       __dirname + "/folderrun/sampleTestCase/tc" + (i + 1).toString() + "o.txt";
     outputFile =
       __dirname + "/folderrun/outputAnswer/tc" + (i + 1).toString() + "a.txt";
-    // console.log("python3 " + __dirname + "/check.py " + testFile + " " + outputFile);
+    console.log(
+      "python " + __dirname + "/check.py " + testFile + " " + outputFile
+    );
     exec(
-      "python3 " + __dirname + "/check.py " + testFile + " " + outputFile,
+      "python " + __dirname + "/check.py " + testFile + " " + outputFile,
       (err, stdout, stderr) => {
-        // console.log(stdout);
+        console.log(stdout);
         if (stdout == "WA\n") {
           setInRedis(submissionID, "WA");
           flag = false;
@@ -59,7 +61,9 @@ runSubmission = async (
   var testCases = [];
   var length = 0;
   flag = true;
+  console.log(quesID);
   questionTestCase.findOne({ questionID: quesID }).then(async (data) => {
+    // console.log(data);
     if (data.toString() == "") {
       return -1;
     }
@@ -101,11 +105,13 @@ runSubmission = async (
       } else if (language == "java") {
         compileCommand = "";
       }
+      console.log("docker exec " + containerName + " " + compileCommand);
       exec(
-        "sudo docker exec " + containerName + " " + compileCommand,
+        "docker exec " + containerName + " " + compileCommand,
         (err, stdout, stderr) => {
           if (err || stderr) {
             flag = false;
+            console.log(stderr);
             setInRedis(submissionID, "CE");
             // throw err;
             return -5;
@@ -119,7 +125,7 @@ runSubmission = async (
             executeCommand1 =
               executeCommand + " < " + inputPath + " > " + outputPath;
             console.log(
-              "sudo docker exec -it " +
+              "docker exec -it " +
                 containerName +
                 ' /bin/sh -c "' +
                 executeCommand1 +
@@ -127,7 +133,7 @@ runSubmission = async (
             );
             try {
               execSync(
-                "sudo docker exec " +
+                "docker exec " +
                   containerName +
                   ' /bin/sh -c "' +
                   executeCommand1 +
@@ -150,7 +156,7 @@ runSubmission = async (
         }
       );
     } else {
-      var executeCommand = "python3 /home/folderrun/" + submissionID + ".py ";
+      var executeCommand = "python /home/folderrun/" + submissionID + ".py ";
       for (let i = 0; i < length; i++) {
         inputPath =
           "home/folderrun/sampleTestCase/tc" + (i + 1).toString() + "i.txt";
@@ -159,7 +165,7 @@ runSubmission = async (
         executeCommand1 =
           executeCommand + " < " + inputPath + " > " + outputPath;
         console.log(
-          "sudo docker exec -it " +
+          "docker exec -it " +
             containerName +
             ' /bin/sh -c "' +
             executeCommand1 +
@@ -167,7 +173,7 @@ runSubmission = async (
         );
         try {
           execSync(
-            "sudo docker exec " +
+            "docker exec " +
               containerName +
               ' /bin/sh -c "' +
               executeCommand1 +
@@ -175,6 +181,7 @@ runSubmission = async (
             { timeout: timeOut },
             (err, stdout, stderr) => {
               if (err || stderr) {
+                console.log(err);
                 setInRedis(submissionID, "timeOut");
                 flag = false;
                 return -5;
@@ -190,10 +197,10 @@ runSubmission = async (
     }
   });
   await delay(2000);
-  await execSync("sudo docker stop " + containerName, (err, stdout, stderr) => {
+  await execSync("docker stop " + containerName, (err, stdout, stderr) => {
     console.log("Docker stopped");
   });
-  await exec("sudo docker rm " + containerName, (err, stdout, stderr) => {
+  await exec("docker rm " + containerName, (err, stdout, stderr) => {
     console.log("Docker deleted");
   });
   if (flag) {
@@ -201,20 +208,23 @@ runSubmission = async (
     await delay(length * 3000);
     for (var i = 0; i < length; ++i) {
       var answerFile =
-        __dirname + "/folderrun/outputAnswer/tc" + (i + 1).toString() + "a.txt";
+        __dirname +
+        "\\folderrun\\outputAnswer\\tc" +
+        (i + 1).toString() +
+        "a.txt";
       var inputFile =
         __dirname +
-        "/folderrun/sampleTestCase/tc" +
+        "\\folderrun\\sampleTestCase\\tc" +
         (i + 1).toString() +
         "i.txt";
       var outputFile =
         __dirname +
-        "/folderrun/sampleTestCase/tc" +
+        "\\folderrun\\sampleTestCase\\tc" +
         (i + 1).toString() +
         "o.txt";
-      execSync("sudo rm " + answerFile);
-      execSync("sudo rm " + inputFile);
-      execSync("sudo rm " + outputFile);
+      execSync("del /f " + answerFile);
+      execSync("del /f " + inputFile);
+      execSync("del /f " + outputFile);
     }
   }
   return 0;

@@ -55,18 +55,23 @@ amqp.connect("amqp://localhost", async (error1, connection) => {
           var cmd = "";
           if (count == 0) {
             cmd =
-              'echo 51101 | sudo -S docker run -v /home/sharvil/Projects/Remote-Code-Execution-Engine/Judge/folderrun/:/home/folderrun/ -dt --memory="512m" --cpus="1" ubuntu-comp';
+              "docker run -v " +
+              __dirname +
+              '/../folderrun/:/home/folderrun/ -dt --memory="512m" --cpus="1" ubuntu-comp';
             ++count;
           } else {
             cmd =
-              'sudo docker run -v /home/sharvil/Projects/Remote-Code-Execution-Engine/Judge/folderrun/:/home/folderrun/ -dt --memory="512m" --cpus="1" ubuntu-comp';
+              "docker run -v " +
+              __dirname +
+              '/../folderrun/:/home/folderrun/ -dt --memory="512m" --cpus="1" ubuntu-comp';
           }
+          console.log(cmd);
           exec(cmd, (err, stdout, stderr) => {
             if (err) {
               throw err;
             }
             console.log("docker running");
-            exec("sudo docker ps -a", async (err, stdout, stderr) => {
+            exec("docker ps -a", async (err, stdout, stderr) => {
               var lst = stdout.split("\n");
               lst = lst[1].split(" ");
               containerName = lst[lst.length - 1].split("\n")[0];
